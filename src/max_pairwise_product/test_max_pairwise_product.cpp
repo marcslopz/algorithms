@@ -7,26 +7,11 @@
 #include <vector>
 
 #include "max_pairwise_product.h"
+#include "common/random_generator.h"
 
 namespace ma = mjlopez::algorithms;
 
 namespace {
-template<class IntType=int>
-class random_generator {
-public:
-  random_generator(IntType min, IntType max)
-  :_random_device(),
-   _generator(_random_device()),
-   _unif_dist(min, max) {}
-
-  IntType generate() {
-    return _unif_dist(_generator);
-  }
-private:
-  std::random_device _random_device;
-  std::mt19937 _generator;
-  std::uniform_int_distribution<IntType> _unif_dist;
-};
 
 void assert(bool condition) {
   if (!condition)
@@ -66,7 +51,7 @@ test_easy_case() {
 uint64_t
 test_large_case(uint64_t vector_size) {
   std::vector<uint32_t> large_vector;
-  random_generator<uint32_t> random_generator(0, 2e5);
+  ma::random_generator<uint32_t> random_generator(0, 2e5);
   std::cout << "---------------------------" << std::endl
       << __func__ << std::endl
       << "starting generation";
