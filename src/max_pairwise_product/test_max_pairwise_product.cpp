@@ -22,7 +22,9 @@ void
 test_trivial_cases() {
   /// empty vector
   const std::vector<int> empty_vector = {};
-  const auto result_empty_vector = ma::max_pairwise_product(empty_vector);
+  auto result_empty_vector = ma::max_pairwise_product(empty_vector);
+  assert(result_empty_vector.first == 0);
+  result_empty_vector = ma::max_pairwise_product_enhanced(empty_vector);
   assert(result_empty_vector.first == 0);
 
   /// one-component vector
@@ -30,14 +32,20 @@ test_trivial_cases() {
   const int component_five = 5;
   std::vector<int> one_component_vector = {component_one};
   auto result_one_component_vector = ma::max_pairwise_product(one_component_vector);
-  assert(result_one_component_vector.first == component_one);
+  assert(result_one_component_vector.first == 0);
+  result_one_component_vector = ma::max_pairwise_product_enhanced(one_component_vector);
+  assert(result_one_component_vector.first == 0);
   one_component_vector = {component_five};
   result_one_component_vector = ma::max_pairwise_product(one_component_vector);
-  assert(result_one_component_vector.first == component_five);
+  assert(result_one_component_vector.first == 0);
+  result_one_component_vector = ma::max_pairwise_product_enhanced(one_component_vector);
+  assert(result_one_component_vector.first == 0);
 
   /// two-component vector
   const std::vector<int> two_component_vector = {component_one, component_five};
-  const auto result_two_component_vector = ma::max_pairwise_product(two_component_vector);
+  auto result_two_component_vector = ma::max_pairwise_product(two_component_vector);
+  assert(result_two_component_vector.first == component_one * component_five);
+  result_two_component_vector = ma::max_pairwise_product_enhanced(two_component_vector);
   assert(result_two_component_vector.first == component_one * component_five);
 }
 
@@ -45,12 +53,14 @@ void
 test_easy_case() {
   /// n-component vector
   const std::vector<int> easy_vector = {1, 7, 5, 15, 7, 10};
-  const auto result_easy_vector = ma::max_pairwise_product(easy_vector);
+  auto result_easy_vector = ma::max_pairwise_product(easy_vector);
+  assert(result_easy_vector.first == 15 * 10);
+  result_easy_vector = ma::max_pairwise_product_enhanced(easy_vector);
   assert(result_easy_vector.first == 15 * 10);
 }
 
 uint64_t
-test_large_case(uint64_t vector_size) {
+test_large_case(uint64_t vector_size, bool enhanced) {
   std::vector<uint32_t> large_vector;
   ma::random_generator<uint32_t> random_generator(0, 2e5);
   std::cout << "---------------------------" << std::endl
@@ -68,7 +78,11 @@ test_large_case(uint64_t vector_size) {
       << std::endl
       << "Starting to calculate max_pairwise_product...";
   before = std::chrono::system_clock::now();
-  const auto result_large_vector = ma::max_pairwise_product<uint32_t,uint64_t, uint64_t>(large_vector);
+  std::pair<uint32_t,uint64_t> result_large_vector;
+  if (enhanced)
+    result_large_vector = ma::max_pairwise_product_enhanced<uint32_t,uint64_t, uint64_t>(large_vector);
+  else
+    result_large_vector = ma::max_pairwise_product<uint32_t,uint64_t, uint64_t>(large_vector);
   after = std::chrono::system_clock::now();
   std::cout << "generated OK" << std::endl
       << "Result: " << result_large_vector.first << std::endl
@@ -83,17 +97,33 @@ test_large_case() {
   std::pair<size_t,size_t> input_sizes(1e4,1e5);
   std::pair<size_t,uint64_t> number_of_ops;
 
-  number_of_ops.first = test_large_case(input_sizes.first);
-  number_of_ops.second = test_large_case(input_sizes.second);
+  bool enhanced = false;
+  number_of_ops.first = test_large_case(input_sizes.first, enhanced);
+  number_of_ops.second = test_large_case(input_sizes.second, enhanced);
   ma::order actual_order = ma::calculate_order(input_sizes, number_of_ops);
   std::cout << "---------------------------" << std::endl
       << __func__ << std::endl
+      << "enhanced: " << std::boolalpha << enhanced << std::endl
       << "first input size: " << input_sizes.first << std::endl
       << "second input size: " << input_sizes.second << std::endl
       << "first number of ops: " << number_of_ops.first << std::endl
       << "second number of ops: " << number_of_ops.second << std::endl
       << "order of algorithm: " << ma::as_string(actual_order) << std::endl;
   assert(actual_order == ma::order::n2);
+
+  enhanced = true;
+  number_of_ops.first = test_large_case(input_sizes.first, enhanced);
+  number_of_ops.second = test_large_case(input_sizes.second, enhanced);
+  actual_order = ma::calculate_order(input_sizes, number_of_ops);
+  std::cout << "---------------------------" << std::endl
+      << __func__ << std::endl
+      << "enhanced: " << std::boolalpha << enhanced << std::endl
+      << "first input size: " << input_sizes.first << std::endl
+      << "second input size: " << input_sizes.second << std::endl
+      << "first number of ops: " << number_of_ops.first << std::endl
+      << "second number of ops: " << number_of_ops.second << std::endl
+      << "order of algorithm: " << ma::as_string(actual_order) << std::endl;
+  assert(actual_order == ma::order::nlogn);
 }
 } // namespace
 
