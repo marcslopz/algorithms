@@ -34,10 +34,13 @@ constexpr std::array<const char*,(static_cast<size_t>(order::max) - static_cast<
     "n",
     "constant"};
 
-std::string
+order
 calculate_order(
-    const std::pair<size_t,uint64_t> first_step,
-    const std::pair<size_t,uint64_t> second_step);
+    const std::pair<size_t,size_t> input_sizes,
+    const std::pair<uint64_t,uint64_t> number_of_ops);
+
+std::string
+as_string(order);
 
 } /* namespace algorithms */
 } /* namespace mjlopez */

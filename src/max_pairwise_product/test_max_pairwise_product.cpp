@@ -80,20 +80,20 @@ test_large_case(uint64_t vector_size) {
 
 void
 test_large_case() {
-  std::pair<size_t,uint64_t> result_e4;
-  std::pair<size_t,uint64_t> result_e5;
-  result_e4.first = static_cast<size_t>(1e4);
-  result_e5.first = static_cast<size_t>(1e5);
-  result_e4.second = test_large_case(result_e4.first);
-  result_e5.second = test_large_case(result_e5.first);
+  std::pair<size_t,size_t> input_sizes(1e4,1e5);
+  std::pair<size_t,uint64_t> number_of_ops;
 
+  number_of_ops.first = test_large_case(input_sizes.first);
+  number_of_ops.second = test_large_case(input_sizes.second);
+  ma::order actual_order = ma::calculate_order(input_sizes, number_of_ops);
   std::cout << "---------------------------" << std::endl
       << __func__ << std::endl
-      << "first input size: " << result_e4.first << std::endl
-      << "second input size: " << result_e5.first << std::endl
-      << "first number of ops: " << result_e4.second << std::endl
-      << "second number of ops: " << result_e5.second << std::endl
-      << "order of algorithm: " << ma::calculate_order(result_e4, result_e5) << std::endl;
+      << "first input size: " << input_sizes.first << std::endl
+      << "second input size: " << input_sizes.second << std::endl
+      << "first number of ops: " << number_of_ops.first << std::endl
+      << "second number of ops: " << number_of_ops.second << std::endl
+      << "order of algorithm: " << ma::as_string(actual_order) << std::endl;
+  assert(actual_order == ma::order::n2);
 }
 } // namespace
 
