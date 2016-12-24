@@ -1,4 +1,6 @@
 #include <cstdlib>
+#include <chrono>
+#include <iostream>
 
 #include "merge_sort.h"
 #include "common/order_calculations.h"
@@ -55,9 +57,51 @@ test_easy_case() {
     assert(result_easy_vector.first[i] == expected_sorted_vector[i]);
 }
 
-
+uint64_t
+test_large_case(uint64_t vector_size) {
+  std::vector<uint32_t> large_vector;
+  ma::random_generator<uint32_t> random_generator(0, 2e5);
+  std::cout << "---------------------------" << std::endl
+      << __func__ << std::endl
+      << "starting generation";
+  auto before = std::chrono::system_clock::now();
+  for (std::uint64_t i = 0; i < vector_size; ++i) {
+    large_vector.push_back(random_generator.generate());
+    if (i % 1000 == 0)
+      std::cout << "." << std::flush;
+  }
+  auto after = std::chrono::system_clock::now();
+  std::cout << "generated OK" << std::endl
+      << "Time elapsed: " << std::chrono::duration_cast<std::chrono::seconds>(after-before).count() << " seconds." << std::endl
+      << std::endl
+      << "Starting to calculate max_pairwise_product...";
+  before = std::chrono::system_clock::now();
+  const auto result_large_vector = ma::merge_sort<uint32_t,uint64_t>(large_vector, 0, large_vector.size());
+  after = std::chrono::system_clock::now();
+  std::cout << "generated OK" << std::endl
+//      << "Result: " << result_large_vector.first << std::endl
+      << "Operations: " << result_large_vector.second << std::endl
+      << "Time elapsed: " << std::chrono::duration_cast<std::chrono::seconds>(after-before).count() << " seconds." << std::endl
+      << std::endl;
+  return result_large_vector.second;
+}
 void
-test_large_case() {}
+test_large_case() {
+  std::pair<size_t,size_t> input_sizes(1e4,1e5);
+  std::pair<size_t,uint64_t> number_of_ops;
+
+  number_of_ops.first = test_large_case(input_sizes.first);
+  number_of_ops.second = test_large_case(input_sizes.second);
+  ma::order actual_order = ma::calculate_order(input_sizes, number_of_ops);
+  std::cout << "---------------------------" << std::endl
+      << __func__ << std::endl
+      << "first input size: " << input_sizes.first << std::endl
+      << "second input size: " << input_sizes.second << std::endl
+      << "first number of ops: " << number_of_ops.first << std::endl
+      << "second number of ops: " << number_of_ops.second << std::endl
+      << "order of algorithm: " << ma::as_string(actual_order) << std::endl;
+  assert(actual_order == ma::order::nlogn);
+}
 } // namespace
 
 int main(int argc, char** argv) {
