@@ -1,2 +1,3 @@
 add_subdirectory(integer_multiplication)
+add_subdirectory(max_pairwise_product)
 
