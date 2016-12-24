@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <random>
+
 namespace mjlopez {
 namespace algorithms {
 

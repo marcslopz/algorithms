@@ -30,6 +30,16 @@ std::pair<ProductType,OperationCounter> max_pairwise_product(const std::vector<I
   return result_pair;
 }
 
+template<typename InputType=int, typename ProductType=int, typename OperationCounter=int>
+std::pair<ProductType,OperationCounter> max_pairwise_product_enhanced(const std::vector<InputType>& numbers) {
+  const std::pair<const std::vector<InputType>,OperationCounter> sorted_result = merge_sort(numbers);
+  std::pair<ProductType, OperationCounter> result_pair(0, 0);
+  result_pair.second = ++sorted_result.second;
+  const std::vector<InputType>& sorted_vector = sorted_result.first;
+  result_pair.first = sorted_vector[sorted_vector.size()-1] * sorted_vector[sorted_vector.size()-2];
+  return result_pair;
+}
+
 } // namespace mjlopez
 } // namespace algorithms
 
