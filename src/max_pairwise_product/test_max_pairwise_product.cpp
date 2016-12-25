@@ -59,15 +59,16 @@ test_easy_case() {
   assert(result_easy_vector.first == 15 * 10);
 }
 
-uint64_t
-test_large_case(uint64_t vector_size, bool enhanced) {
+template<typename Content, typename Size>
+std::vector<Content>
+generate_input(const Size& size, const Content& min, const Content& max) {
   std::vector<uint32_t> large_vector;
-  ma::random_generator<uint32_t> random_generator(0, 2e5);
+  ma::random_generator<uint32_t> random_generator(min, max);
   std::cout << "---------------------------" << std::endl
       << __func__ << std::endl
       << "starting generation";
   auto before = std::chrono::system_clock::now();
-  for (std::uint64_t i = 0; i < vector_size; ++i) {
+  for (std::uint64_t i = 0; i < size; ++i) {
     large_vector.push_back(random_generator.generate());
     if (i % 1000 == 0)
       std::cout << "." << std::flush;
@@ -75,15 +76,20 @@ test_large_case(uint64_t vector_size, bool enhanced) {
   auto after = std::chrono::system_clock::now();
   std::cout << "generated OK" << std::endl
       << "Time elapsed: " << std::chrono::duration_cast<std::chrono::seconds>(after-before).count() << " seconds." << std::endl
-      << std::endl
-      << "Starting to calculate max_pairwise_product...";
-  before = std::chrono::system_clock::now();
+      << std::endl;
+  return large_vector;
+}
+uint64_t
+test_large_case(uint64_t vector_size, bool enhanced) {
+  std::vector<uint32_t> large_vector = generate_input<uint32_t,uint64_t>(vector_size, 0, 2e5);
+  std::cout << "Starting to calculate max_pairwise_product...";
+  auto before = std::chrono::system_clock::now();
   std::pair<uint32_t,uint64_t> result_large_vector;
   if (enhanced)
     result_large_vector = ma::max_pairwise_product_enhanced<uint32_t,uint64_t, uint64_t>(large_vector);
   else
     result_large_vector = ma::max_pairwise_product<uint32_t,uint64_t, uint64_t>(large_vector);
-  after = std::chrono::system_clock::now();
+  auto after = std::chrono::system_clock::now();
   std::cout << "generated OK" << std::endl
       << "Result: " << result_large_vector.first << std::endl
       << "Operations: " << result_large_vector.second << std::endl
@@ -125,6 +131,28 @@ test_large_case() {
       << "order of algorithm: " << ma::as_string(actual_order) << std::endl;
   assert(actual_order == ma::order::nlogn);
 }
+
+void
+test_compare_algorithms() {
+  const uint64_t size = 5;
+  const uint32_t min_value = 0;
+  const uint32_t max_value = 2e5;
+  const auto input = generate_input<uint32_t,uint64_t>(size, min_value, max_value);
+  const auto result = ma::max_pairwise_product<uint32_t,uint64_t,uint64_t>(input);
+  const auto result_enhanced = ma::max_pairwise_product_enhanced<uint32_t,uint64_t,uint64_t>(input);
+  std::cout << "-----------------------------" << std::endl
+      << __func__ << std::endl
+      << "input vector: [";
+  for (const auto i: input) {
+    std::cout << i << ", ";
+  }
+  std::cout << "]" << std::endl
+      << "max_pairwise_product's result: " << result.first << std::endl
+      << "max_pairwise_product enhanced's result: " << result_enhanced.first << std::endl;
+  assert(result.first == result_enhanced.first);
+  std::cout << "Assert OK!" << std::endl
+      << "-----------------------------" << std::endl;
+}
 } // namespace
 
 int main(int argc, char** argv) {
@@ -132,7 +160,9 @@ int main(int argc, char** argv) {
     test_trivial_cases();
     test_easy_case();
     test_large_case();
+    test_compare_algorithms();
   } catch (...) {
+    std::cerr << "TEST FAILURE!!!!" << std::endl;
     return EXIT_FAILURE;
   }
   return EXIT_SUCCESS;
