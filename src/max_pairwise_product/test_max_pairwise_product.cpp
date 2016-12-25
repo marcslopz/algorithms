@@ -61,9 +61,8 @@ test_easy_case() {
 
 template<typename Content, typename Size>
 std::vector<Content>
-generate_input(const Size& size, const Content& min, const Content& max) {
+generate_input(const Size& size, ma::random_generator<Content>& random_generator) {
   std::vector<uint32_t> large_vector;
-  ma::random_generator<uint32_t> random_generator(min, max);
   std::cout << "---------------------------" << std::endl
       << __func__ << std::endl
       << "starting generation";
@@ -81,7 +80,8 @@ generate_input(const Size& size, const Content& min, const Content& max) {
 }
 uint64_t
 test_large_case(uint64_t vector_size, bool enhanced) {
-  std::vector<uint32_t> large_vector = generate_input<uint32_t,uint64_t>(vector_size, 0, 2e5);
+  ma::random_generator<uint32_t> random_generator(0, 2e5);
+  std::vector<uint32_t> large_vector = generate_input<uint32_t,uint64_t>(vector_size, random_generator);
   std::cout << "Starting to calculate max_pairwise_product...";
   auto before = std::chrono::system_clock::now();
   std::pair<uint32_t,uint64_t> result_large_vector;
@@ -134,24 +134,37 @@ test_large_case() {
 
 void
 test_compare_algorithms() {
-  const uint64_t size = 5;
-  const uint32_t min_value = 0;
-  const uint32_t max_value = 2e5;
-  const auto input = generate_input<uint32_t,uint64_t>(size, min_value, max_value);
-  const auto result = ma::max_pairwise_product<uint32_t,uint64_t,uint64_t>(input);
-  const auto result_enhanced = ma::max_pairwise_product_enhanced<uint32_t,uint64_t,uint64_t>(input);
-  std::cout << "-----------------------------" << std::endl
-      << __func__ << std::endl
-      << "input vector: [";
-  for (const auto i: input) {
-    std::cout << i << ", ";
+  const size_t number_of_generations = 10;
+  using size_type = uint64_t;
+  using product_type = uint64_t;
+  using operations_type = uint64_t;
+  using element_type = uint32_t;
+  ma::random_generator<size_type> random_size_generator(2, 1e5);
+  ma::random_generator<element_type> random_element_generator(0, 2e5);
+  for (size_t i = 0; i < number_of_generations; ++i) {
+    const auto size = random_size_generator.generate();
+    const auto input = generate_input<element_type,size_type>(size, random_element_generator);
+    const auto result = ma::max_pairwise_product<element_type,product_type,operations_type>(input);
+    const auto result_enhanced = ma::max_pairwise_product_enhanced<element_type,product_type,operations_type>(input);
+    std::cout << "-----------------------------" << std::endl
+        << __func__ << std::endl
+        << "size: " << size  << std::endl
+        << "input vector: [";
+    for (size_t j = 0; j < size; ++j) {
+      if (j == 0)
+        std::cout << input [j] << " ";
+      if (j == 0 and size > 1)
+        std::cout << "... ";
+      if (j == size - 1)
+        std::cout << input[j];
+    }
+    std::cout << "]" << std::endl
+        << "max_pairwise_product's result: " << result.first << std::endl
+        << "max_pairwise_product enhanced's result: " << result_enhanced.first << std::endl;
+    assert(result.first == result_enhanced.first);
+    std::cout << "Assert OK!" << std::endl
+        << "-----------------------------" << std::endl;
   }
-  std::cout << "]" << std::endl
-      << "max_pairwise_product's result: " << result.first << std::endl
-      << "max_pairwise_product enhanced's result: " << result_enhanced.first << std::endl;
-  assert(result.first == result_enhanced.first);
-  std::cout << "Assert OK!" << std::endl
-      << "-----------------------------" << std::endl;
 }
 } // namespace
 

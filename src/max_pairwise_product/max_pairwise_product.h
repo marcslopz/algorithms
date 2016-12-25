@@ -28,9 +28,9 @@ std::pair<ProductType,OperationCounter> max_pairwise_product(const std::vector<I
       const auto casted_j = static_cast<ProductType>(numbers[j]);
       const auto casted_product = casted_i * casted_j;
       if (casted_product > result_pair.first) {
-        std:: cout << "winner product: " << numbers[i] << " * " << numbers[j] << " = ";
+//        std:: cout << "winner product: " << numbers[i] << " * " << numbers[j] << " = ";
         result_pair.first = casted_product;
-        std::cout << result_pair.first << std::endl;
+//        std::cout << result_pair.first << std::endl;
       }
     }
   }
@@ -49,8 +49,8 @@ std::pair<ProductType,OperationCounter> max_pairwise_product_enhanced(const std:
   const auto casted_y = static_cast<ProductType>(sorted_vector[sorted_vector.size()-2]);
   const auto casted_product = casted_x * casted_y;
   result_pair.first =  casted_product;
-  std:: cout << "(ENH) winner product: " << casted_x << " * " << casted_y << " = "
-      << result_pair.first << std::endl;
+//  std:: cout << "(ENH) winner product: " << casted_x << " * " << casted_y << " = "
+//      << result_pair.first << std::endl;
   return result_pair;
 }
 

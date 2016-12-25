@@ -17,7 +17,7 @@ class random_generator {
 public:
   random_generator(IntType min, IntType max)
   :_random_device(),
-   _generator(_random_device()),
+   _generator(),
    _unif_dist(min, max) {}
 
   IntType generate() {
