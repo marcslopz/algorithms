@@ -84,14 +84,16 @@ generate_input(const Size& size, ma::random_generator<int>& random_generator) {
 }
 /**/
 uint64_t
-test_large_case(size_t vector_size) {
+test_large_case(size_t vector_size, bool enhanced) {
   ma::random_generator<int> random_generator(0, 9);
   const auto large_string = generate_input<size_t>(vector_size, random_generator);
-  std::cout << "Starting to calculate number_of_valid_chains...";
+  std::cout << "Starting to calculate number_of_valid_chains..." << std::endl;
   auto before = std::chrono::system_clock::now();
-  const auto result_large_vector = ma::number_of_valid_chains(large_string);
+  const auto result_large_vector = enhanced ?
+      ma::number_of_valid_chains_enh(large_string) :
+      ma::number_of_valid_chains(large_string);
   auto after = std::chrono::system_clock::now();
-  std::cout << "generated OK" << std::endl
+  std::cout << "calculated OK" << std::endl
       << "Result: " << result_large_vector.first << std::endl
       << "Operations: " << result_large_vector.second << std::endl
       << "Time elapsed: " << std::chrono::duration_cast<std::chrono::seconds>(after-before).count() << " seconds." << std::endl
@@ -101,20 +103,36 @@ test_large_case(size_t vector_size) {
 /**/
 void
 test_large_case() {
-  std::pair<size_t,size_t> input_sizes(1e4,1e5);
+  std::pair<size_t,size_t> input_sizes(100,1000);
   std::pair<uint64_t,uint64_t> number_of_ops;
 
-  number_of_ops.first = test_large_case(input_sizes.first);
-  number_of_ops.second = test_large_case(input_sizes.second);
+  bool enhanced = false;
+  number_of_ops.first = test_large_case(input_sizes.first, enhanced);
+  number_of_ops.second = test_large_case(input_sizes.second, enhanced);
   ma::order actual_order = ma::calculate_order(input_sizes, number_of_ops);
   std::cout << "---------------------------" << std::endl
       << __func__ << std::endl
+      << "enhanced: "  << std::boolalpha << enhanced << std::endl
       << "first input size: " << input_sizes.first << std::endl
       << "second input size: " << input_sizes.second << std::endl
       << "first number of ops: " << number_of_ops.first << std::endl
       << "second number of ops: " << number_of_ops.second << std::endl
       << "order of algorithm: " << ma::as_string(actual_order) << std::endl;
   assert(actual_order == ma::order::n3);
+
+  enhanced = true;
+  number_of_ops.first = test_large_case(input_sizes.first, enhanced);
+  number_of_ops.second = test_large_case(input_sizes.second, enhanced);
+  actual_order = ma::calculate_order(input_sizes, number_of_ops);
+  std::cout << "---------------------------" << std::endl
+      << __func__ << std::endl
+      << "enhanced: "  << std::boolalpha << enhanced << std::endl
+      << "first input size: " << input_sizes.first << std::endl
+      << "second input size: " << input_sizes.second << std::endl
+      << "first number of ops: " << number_of_ops.first << std::endl
+      << "second number of ops: " << number_of_ops.second << std::endl
+      << "order of algorithm: " << ma::as_string(actual_order) << std::endl;
+  assert(actual_order == ma::order::n2);
 }
 /**/
 void
@@ -159,7 +177,7 @@ int main(int argc, char** argv) {
   try {
     test_trivial_cases();
     test_easy_case();
-//    test_large_case();
+    test_large_case();
     test_compare_algorithms();
   } catch (...) {
     std::cerr << "TEST FAILURE!!!!" << std::endl;
