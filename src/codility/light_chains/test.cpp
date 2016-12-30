@@ -5,6 +5,7 @@
  *      Author: marcos
  */
 
+#include <chrono>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -61,17 +62,17 @@ test_easy_case() {
   }
 }
 
-/**
-template<typename Content, typename Size>
-std::vector<Content>
-generate_input(const Size& size, ma::random_generator<Content>& random_generator) {
-  std::vector<uint32_t> large_vector;
+/**/
+template<typename Size>
+std::string
+generate_input(const Size& size, ma::random_generator<int>& random_generator) {
+  std::string large_str;
   std::cout << "---------------------------" << std::endl
       << __func__ << std::endl
       << "starting generation";
   auto before = std::chrono::system_clock::now();
-  for (std::uint64_t i = 0; i < size; ++i) {
-    large_vector.push_back(random_generator.generate());
+  for (Size i = 0; i < size; ++i) {
+    large_str.push_back(static_cast<char>(random_generator.generate() + '0'));
     if (i % 1000 == 0)
       std::cout << "." << std::flush;
   }
@@ -79,19 +80,16 @@ generate_input(const Size& size, ma::random_generator<Content>& random_generator
   std::cout << "generated OK" << std::endl
       << "Time elapsed: " << std::chrono::duration_cast<std::chrono::seconds>(after-before).count() << " seconds." << std::endl
       << std::endl;
-  return large_vector;
+  return large_str;
 }
-uint64_t
-test_large_case(uint64_t vector_size, bool enhanced) {
-  ma::random_generator<uint32_t> random_generator(0, 2e5);
-  std::vector<uint32_t> large_vector = generate_input<uint32_t,uint64_t>(vector_size, random_generator);
-  std::cout << "Starting to calculate max_pairwise_product...";
+/**/
+int
+test_large_case(size_t vector_size) {
+  ma::random_generator<int> random_generator(0, 9);
+  const auto large_string = generate_input<size_t>(vector_size, random_generator);
+  std::cout << "Starting to calculate number_of_valid_chains...";
   auto before = std::chrono::system_clock::now();
-  std::pair<uint32_t,uint64_t> result_large_vector;
-  if (enhanced)
-    result_large_vector = ma::max_pairwise_product_enhanced<uint32_t,uint64_t, uint64_t>(large_vector);
-  else
-    result_large_vector = ma::max_pairwise_product<uint32_t,uint64_t, uint64_t>(large_vector);
+  const auto result_large_vector = ma::number_of_valid_chains(large_string);
   auto after = std::chrono::system_clock::now();
   std::cout << "generated OK" << std::endl
       << "Result: " << result_large_vector.first << std::endl
@@ -100,41 +98,25 @@ test_large_case(uint64_t vector_size, bool enhanced) {
       << std::endl;
   return result_large_vector.second;
 }
-
+/**/
 void
 test_large_case() {
-  std::pair<size_t,size_t> input_sizes(1e4,1e5);
+  std::pair<size_t,size_t> input_sizes(100,1000);
   std::pair<size_t,uint64_t> number_of_ops;
 
-  bool enhanced = false;
-  number_of_ops.first = test_large_case(input_sizes.first, enhanced);
-  number_of_ops.second = test_large_case(input_sizes.second, enhanced);
+  number_of_ops.first = test_large_case(input_sizes.first);
+  number_of_ops.second = test_large_case(input_sizes.second);
   ma::order actual_order = ma::calculate_order(input_sizes, number_of_ops);
   std::cout << "---------------------------" << std::endl
       << __func__ << std::endl
-      << "enhanced: " << std::boolalpha << enhanced << std::endl
       << "first input size: " << input_sizes.first << std::endl
       << "second input size: " << input_sizes.second << std::endl
       << "first number of ops: " << number_of_ops.first << std::endl
       << "second number of ops: " << number_of_ops.second << std::endl
       << "order of algorithm: " << ma::as_string(actual_order) << std::endl;
-  assert(actual_order == ma::order::n2);
-
-  enhanced = true;
-  number_of_ops.first = test_large_case(input_sizes.first, enhanced);
-  number_of_ops.second = test_large_case(input_sizes.second, enhanced);
-  actual_order = ma::calculate_order(input_sizes, number_of_ops);
-  std::cout << "---------------------------" << std::endl
-      << __func__ << std::endl
-      << "enhanced: " << std::boolalpha << enhanced << std::endl
-      << "first input size: " << input_sizes.first << std::endl
-      << "second input size: " << input_sizes.second << std::endl
-      << "first number of ops: " << number_of_ops.first << std::endl
-      << "second number of ops: " << number_of_ops.second << std::endl
-      << "order of algorithm: " << ma::as_string(actual_order) << std::endl;
-  assert(actual_order == ma::order::nlogn);
+  assert(actual_order == ma::order::n3);
 }
-
+/**
 void
 test_compare_algorithms() {
   const size_t number_of_generations = 10;
@@ -176,8 +158,8 @@ int main(int argc, char** argv) {
   try {
     test_trivial_cases();
     test_easy_case();
-    /*
     test_large_case();
+    /*
     test_compare_algorithms();
     */
   } catch (...) {
