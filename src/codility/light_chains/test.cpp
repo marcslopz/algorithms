@@ -36,7 +36,7 @@ test_trivial_cases() {
   assert(result_one_component_string.first == 1);
   one_component_string = {component_five};
   result_one_component_string = ma::number_of_valid_chains(one_component_string);
-  assert(result_one_component_string.first == 0);
+  assert(result_one_component_string.first == 1);
 
   /// two-component vector
   std::string two_component_string = {component_one, component_five};
@@ -184,6 +184,8 @@ int main(int argc, char** argv) {
     std::cerr << "TEST FAILURE!!!!" << std::endl;
     return EXIT_FAILURE;
   }
+  std::cout << "TEST OK" << std::endl;
+
   return EXIT_SUCCESS;
 }
 
