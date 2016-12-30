@@ -83,7 +83,7 @@ generate_input(const Size& size, ma::random_generator<int>& random_generator) {
   return large_str;
 }
 /**/
-int
+uint64_t
 test_large_case(size_t vector_size) {
   ma::random_generator<int> random_generator(0, 9);
   const auto large_string = generate_input<size_t>(vector_size, random_generator);
@@ -101,8 +101,8 @@ test_large_case(size_t vector_size) {
 /**/
 void
 test_large_case() {
-  std::pair<size_t,size_t> input_sizes(100,1000);
-  std::pair<size_t,uint64_t> number_of_ops;
+  std::pair<size_t,size_t> input_sizes(1e4,1e5);
+  std::pair<uint64_t,uint64_t> number_of_ops;
 
   number_of_ops.first = test_large_case(input_sizes.first);
   number_of_ops.second = test_large_case(input_sizes.second);
@@ -116,52 +116,51 @@ test_large_case() {
       << "order of algorithm: " << ma::as_string(actual_order) << std::endl;
   assert(actual_order == ma::order::n3);
 }
-/**
+/**/
 void
 test_compare_algorithms() {
   const size_t number_of_generations = 10;
-  using size_type = uint64_t;
-  using product_type = uint64_t;
+  using size_type = int;
   using operations_type = uint64_t;
-  using element_type = uint32_t;
-  ma::random_generator<size_type> random_size_generator(2, 1e5);
-  ma::random_generator<element_type> random_element_generator(0, 2e5);
+  using element_type = int;
+  ma::random_generator<size_type> random_size_generator(2, 100);
+  ma::random_generator<element_type> random_element_generator(0, 9);
   for (size_t i = 0; i < number_of_generations; ++i) {
     const auto size = random_size_generator.generate();
-    const auto input = generate_input<element_type,size_type>(size, random_element_generator);
-    const auto result = ma::max_pairwise_product<element_type,product_type,operations_type>(input);
-    const auto result_enhanced = ma::max_pairwise_product_enhanced<element_type,product_type,operations_type>(input);
+    const auto input = generate_input<size_type>(size, random_element_generator);
     std::cout << "-----------------------------" << std::endl
         << __func__ << std::endl
         << "size: " << size  << std::endl
         << "input vector: [";
     for (size_t j = 0; j < size; ++j) {
-      if (j == 0)
-        std::cout << input [j] << " ";
-      if (j == 0 and size > 1)
-        std::cout << "... ";
-      if (j == size - 1)
-        std::cout << input[j];
+      std::cout << input [j] << ", ";
+//      if (j == 0)
+//        std::cout << input [j] << " ";
+//      if (j == 0 and size > 1)
+//        std::cout << "... ";
+//      if (j == size - 1)
+//        std::cout << input[j];
     }
-    std::cout << "]" << std::endl
-        << "max_pairwise_product's result: " << result.first << std::endl
-        << "max_pairwise_product enhanced's result: " << result_enhanced.first << std::endl;
+    std::cout << "]" << std::endl;
+    const auto result = ma::number_of_valid_chains(input);
+    std::cout << "number_of_valid_chains's result: " << result.first << std::endl;
+
+    const auto result_enhanced = ma::number_of_valid_chains_enh(input);
+    std::cout << "number_of_valid_chains enhanced's result: " << result_enhanced.first << std::endl;
     assert(result.first == result_enhanced.first);
     std::cout << "Assert OK!" << std::endl
         << "-----------------------------" << std::endl;
   }
 }
-*/
+/**/
 } // namespace
 
 int main(int argc, char** argv) {
   try {
     test_trivial_cases();
     test_easy_case();
-    test_large_case();
-    /*
+//    test_large_case();
     test_compare_algorithms();
-    */
   } catch (...) {
     std::cerr << "TEST FAILURE!!!!" << std::endl;
     return EXIT_FAILURE;
