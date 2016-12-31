@@ -25,7 +25,8 @@ void
 test_trivial_cases() {
 //  [9, 3, 9, 3, 9, 7, 9]
   const std::vector<std::pair<std::vector<int>,int>> input({
-    std::make_pair(std::vector<int>({9, 3, 9, 3, 9, 7, 9}), 7)
+    std::make_pair(std::vector<int>({9, 3, 9, 3, 9, 7, 9}), 7),
+    std::make_pair(std::vector<int>({42}), 42)
   });
   for (const auto e: input) {
     const auto result = ma::get_unpaired_value(e.first);

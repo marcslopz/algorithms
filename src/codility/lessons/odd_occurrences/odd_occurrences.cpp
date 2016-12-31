@@ -45,5 +45,5 @@ int ma::get_unpaired_value(const vector<int>& input) {
     }
   }
   cout << "#3: weird case" << endl;
-  return 0; /// it means there is no unpaired element in the input vector
+  return previous_element; /// it means there is no unpaired element in the input vector
 }
